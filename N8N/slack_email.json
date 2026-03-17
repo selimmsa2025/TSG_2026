@@ -1,0 +1,282 @@
+{
+  "name": "slack",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "155a3e53-f734-43ef-a842-3f58a929432d",
+              "leftValue": "={{ $json.text }}",
+              "rightValue": "@git_invite",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -624,
+        0
+      ],
+      "id": "fdb36e0a-dd5a-4f14-bd4b-a8264c1a2275",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0AJKMV1CR4",
+          "mode": "list",
+          "cachedResultName": "스킬그룹_2026"
+        },
+        "text": "=초대 메일 전송목록\n{{ $json.To }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        288,
+        -128
+      ],
+      "id": "1cf9d797-50c7-41bb-b381-bf1cfe159363",
+      "name": "Send a message",
+      "webhookId": "d1116983-ee6c-4587-bb9c-33e26895140c",
+      "credentials": {
+        "slackApi": {
+          "id": "TpaWxFKgskokQlpe",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "trigger": [
+          "message",
+          "app_mention"
+        ],
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "C0AJKMV1CR4"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        -128
+      ],
+      "id": "468154d7-d87f-4260-b91a-4a32f9bf46b1",
+      "name": "Slack Trigger",
+      "webhookId": "84a21081-990d-487d-9a0e-88fac8952911",
+      "credentials": {
+        "slackApi": {
+          "id": "TpaWxFKgskokQlpe",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1vwcg6zB9Vnb8Eq8BuZj548ZTFwh3RySZCuz_G1L98a4",
+          "mode": "list",
+          "cachedResultName": "mail_list",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vwcg6zB9Vnb8Eq8BuZj548ZTFwh3RySZCuz_G1L98a4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1322991805,
+          "mode": "list",
+          "cachedResultName": "sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1vwcg6zB9Vnb8Eq8BuZj548ZTFwh3RySZCuz_G1L98a4/edit#gid=1322991805"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -432,
+        -80
+      ],
+      "id": "31377835-bd0f-47c2-a284-95256e5da1a0",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2fmRvGT24KVxxO6Y",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -80,
+        -16
+      ],
+      "id": "194ae4e9-991d-4b36-b30c-2430f8981f83",
+      "name": "Get a message",
+      "webhookId": "17a67e09-2008-4bf6-a04f-5b61899d3f4f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8405dbiZf6QpJJKO",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "44c6a05b-d3d9-4406-8c4c-3039d34ab7b8",
+              "name": "To",
+              "value": "={{ $json.To }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        96
+      ],
+      "id": "94386e32-f91e-4b83-b54a-4a4bc9142fcb",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Invite Github ",
+        "emailType": "text",
+        "message": "안녕하세요.\n\n2026 스킬그룹 n8n관련 Github 에 초대 합니다.\n\n아래 설문 링크로 접속하셔서 Github ID 정보를 입력해주세요.\n\n설문이 제출되면 Github에 초대 됩니다.\n\nhttps://forms.gle/YyZmJpnqh46NuCe78",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        -16
+      ],
+      "id": "0c667b1c-7d81-4905-8485-7b00d96d45ea",
+      "name": "Send a message1",
+      "webhookId": "8eac1c02-3b3e-41b9-a256-ab3a0d2f3e4f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "8405dbiZf6QpJJKO",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "bd19697f-2870-4153-8780-18dc7b879c26",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dd72a76a6198a156e72430dba4f6f7e61a79aef8c0509a725392c6589922fece"
+  },
+  "id": "C3XB17RXuK7d5ZOU",
+  "tags": []
+}
