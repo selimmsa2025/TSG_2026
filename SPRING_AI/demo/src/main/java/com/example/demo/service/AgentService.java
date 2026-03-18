@@ -1,10 +1,11 @@
 package com.example.demo.service;
 
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import com.example.demo.agent.RouteType;
+import com.example.demo.tool.RagTool;
+import com.example.demo.tool.DbTool;
 import com.example.demo.tool.WeatherTool;
 
 import lombok.extern.slf4j.Slf4j;
@@ -13,144 +14,53 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AgentService {
 
-    private final AgentRouterService agentRouterService;
-    private final AiServiceByChatClient aiServiceByChatClient;
-    private final RagService1 ragService1;
-    private final RagService2 ragService2;
-    private final ChatClient toolChatClient;
+	private final ChatClient agentChatClient;
 
-    public AgentService(AgentRouterService agentRouterService,
-                        AiServiceByChatClient aiServiceByChatClient,
-                        RagService1 ragService1,
-                        RagService2 ragService2,
-                        ChatClient.Builder builder,
-                        WeatherTool weatherTool) {
+	public AgentService(ChatClient.Builder builder, RagTool ragTool, WeatherTool weatherTool, DbTool dbTool) {
 
-        this.agentRouterService = agentRouterService;
-        this.aiServiceByChatClient = aiServiceByChatClient;
-        this.ragService1 = ragService1;
-        this.ragService2 = ragService2;
+		this.agentChatClient = builder.defaultTools(ragTool, weatherTool, dbTool)
+				.build();
+	}
 
-        this.toolChatClient = builder.defaultTools(weatherTool).build();
-    }
+	public String process(String message) {
 
-    public String process(String message, String source, double score) {
+		log.info("AgentService.process 시작");
+		log.info("사용자 질문 = {}", message);
+		try {
 
-        log.info("AgentService.process 시작");
-        log.info("사용자 질문 = {}", message);
+			String result = agentChatClient.prompt().system("""
+										          너는 사용자의 요청을 해결하는 AI 에이전트다.
+					항상 먼저 스스로 해결할 수 있는지 판단하고, 필요할 때만 도구를 사용한다.
 
-        // 1️⃣ 최초 라우팅
-        RouteType routeType = agentRouterService.route(message);
-        log.info("1차 라우팅 결과 = {}", routeType);
+					동작 원칙:
+					- 사용자의 질문을 먼저 이해하고, 일반적인 지식으로 답할 수 있는지 판단하라.
+					- 일반적인 개념 설명, 상식, 기술 설명, 대화는 도구를 사용하지 말고 직접 답하라.
+					- 문서, 파일, 업로드된 자료, 특정 데이터 조회 등 외부 정보가 필요한 경우에만 도구를 사용하라.
+					- 하나의 도구로 부족하면 여러 도구를 순차적으로 사용할 수 있다.
+					- 도구 사용이 반드시 필요한 경우에만 선택적으로 사용하라.
+					- 도구 없이 충분히 답할 수 있다면 절대 도구를 사용하지 마라.
 
-        String result = executeByRoute(routeType, message, source, score);
+					도구 사용 기준:
+					- RagTool: 문서, 파일, 자료, PDF, 업로드된 내용 등 특정 자료 기반 질문일 때만 사용
+					- DbTool: 사용자 목록, 사용자 정보, 개수, 특정 데이터 조회 요청일 때 사용
+					- WeatherTool: 날씨, 기온, 지역 날씨 정보 요청일 때 사용
 
-        String evaluation = evaluate(result);
+					응답 원칙:
+					- 내부 판단 과정은 드러내지 말고 결과만 간결하게 제공하라.
+					- 도구 결과가 있다면 자연스럽게 정리해서 전달하라.
+					- 불필요한 도구 사용을 피하고, 가장 단순한 방법으로 답하라.
+					- 최종 답변은 사용자가 바로 이해하고 활용할 수 있게 명확하게 작성하라.
 
-        log.info("평가 결과 = {}", evaluation);
+										                """).user(message).call().content();
+			log.info("LLM 호출 완료");
+			log.info("최종 응답 = {}", result);
 
-        // 보완 필요 시 재라우팅
-        if (evaluation.contains("보완 필요")) {
-
-            log.warn("보완 필요 → 재라우팅 수행");
-
-            RouteType newRoute = agentRouterService.route(message + " 더 정확하게");
-            log.info("2차 라우팅 결과 = {}", newRoute);
-
-            result = executeByRoute(newRoute, message, source, score);
-        }
-
-        log.info("AgentService.process 종료");
-
-        return result;
-    }
-
-    private String executeByRoute(RouteType routeType, String message, String source, double score) {
-
-        switch (routeType) {
-
-            case CHAT:
-                log.info("CHAT 실행");
-                return handleChat(message);
-
-            case RAG:
-                log.info("RAG 실행");
-                return handleRag(message, source, score);
-
-            case TOOL:
-                log.info("TOOL 실행");
-                return handleTool(message);
-
-            default:
-                log.warn("알 수 없는 routeType → CHAT fallback");
-                return handleChat(message);
-        }
-    }
-
-    // ##### 평가 (Self-Reflection) #####
-    private String evaluate(String result) {
-
-        return aiServiceByChatClient.generateText("""
-            너는 AI 응답을 평가하는 검증자다.
-            아래 답변이 사용자 질문에 충분한지 판단하라.
-            
-            부족하면 반드시 "보완 필요"라고 답하고,
-            충분하면 "충분"이라고 답하라.
-
-            답변:
-            """ + result);
-    }
-
-    // ##### 일반 Chat #####
-    private String handleChat(String message) {
-        log.info("handleChat 실행");
-        return aiServiceByChatClient.generateText(message);
-    }
-
-    // ##### RAG #####
-    private String handleRag(String message, String source, double score) {
-
-        log.info("handleRag 실행");
-
-        String safeSource = StringUtils.hasText(source) ? source : null;
-
-        if (isAdvancedRagQuestion(message)) {
-            log.info("고급 RAG(RagService2)");
-            return ragService2.chatWithRewriteQuery(message, score, safeSource);
-        }
-
-        log.info("기본 RAG(RagService1)");
-        return ragService1.ragChat(message, score, safeSource);
-    }
-
-    // ##### Tool #####
-    private String handleTool(String message) {
-
-        log.info("handleTool 실행");
-
-        return toolChatClient.prompt()
-            .system("""
-                너는 AI 에이전트다.
-                날씨 질문이면 반드시 getWeather 도구를 사용하라.
-                일반 질문이면 간단히 답하라.
-            """)
-            .user(message)
-            .call()
-            .content();
-    }
-
-    // ##### 고급 RAG 판단 #####
-    private boolean isAdvancedRagQuestion(String message) {
-
-        if (message == null) return false;
-
-        String text = message.trim();
-
-        return text.contains("다시")
-            || text.contains("쉽게")
-            || text.contains("요약")
-            || text.contains("넓게")
-            || text.contains("관련")
-            || text.contains("정리");
-    }
+			return result;
+		} catch (Exception e) {
+			log.error("AgentService.process 중 오류 발생", e);
+			throw e;
+		} finally {
+			long endTime = System.currentTimeMillis();
+		}
+	}
 }
