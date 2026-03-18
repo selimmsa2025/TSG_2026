@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.2'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+// 1. 저장소 설정: 반드시 이 순서대로 있어야 합니다.
+repositories {
+    mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
+}
+
+ext {
+    // 1.0.0-M6가 불안정할 경우를 대비해 BOM을 통해 관리합니다.
+    set('springAiVersion', "1.0.0-M6")
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // 2. Spring AI 핵심 스타터 (검증된 명칭)
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
+    implementation 'org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter'
+    
+    // 3. 문서 리더기 (M6에서 이름이 바뀐 것들을 수정함)
+    implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
+    implementation 'org.springframework.ai:spring-ai-tika-document-reader'
+    
+    // 4. 에러가 났던 jsoup-document-reader 대신 공식 라이브러리 직접 추가
+    implementation 'org.jsoup:jsoup:1.18.1'
+
+    // 5. RAG의 핵심인 Advisor 기능은 core에 포함됨
+    implementation 'org.springframework.ai:spring-ai-core'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

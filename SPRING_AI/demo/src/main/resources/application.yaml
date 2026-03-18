@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: demo
+
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 30MB
+      
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    
+  ai:
+    openai:
+      api-key: key
+      chat:
+        options:
+          model: gpt-4o-mini
+      embedding:
+        options:
+          model: text-embedding-3-small
+#    ollama:
+#      base-url: http://localhost:11434
+#      chat:
+#        options:
+#          model: llama3:8b
+#          temperature: 0.3
+
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+      simple:
+        enabled: true
