@@ -33,6 +33,6 @@ public class AgentController {
 		log.info("message = {}", message);
 		log.info("source = {}", source);
 		log.info("score = {}", score);
-		return agentService.process(message, source, score);
+		return agentService.process(message);
 	}
 }
