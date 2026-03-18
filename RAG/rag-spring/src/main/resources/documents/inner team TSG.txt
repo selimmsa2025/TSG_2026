@@ -1,0 +1,45 @@
+이너팀 TSG 3월 추진 계획
+
+<3월 목표>
+1. AX(AI Transformation) 추진을 위한 핵심 AI 기술 정의 및 개념 체계화
+2. Vibe Coding 구현을 위한 기본 환경 설정
+3. 학습 내용 체계화 및 세미나 발표를 통한 내부 확산
+4. Vibe Coding 개발 방향성 도출 
+
+<추진 계획>
+
+1. 핵심 AI 기술 개념 학습 
+
+     -- LLM(sLLM)의 이해 (박희택C)
+        예시) Prompt, Context, 생성방식이해
+
+    -- RAG의 이해 (이상철D, 이소희S)
+        예시) 벡터DB 개념, 임베딩 이해, 내부 문서 연결,  *간단한 샘플 코드 작성(ex: 랭체인활용 RAG구축)
+
+    -- AI Agent의 이해 (강민규K, 박세용D)
+        예시) Agent 개념 (LLM + Tool + Planning 구조 이해), Tool Calling 개념, 단일 LLM vs Agent 차이 이해,  *간단한 샘플 Agent 작성(ex: Q&A Agent)
+
+    -- Spring AI (박재희K, 김수지S)
+        예시) Spring AI 아키텍처, ChatClient 사용법, Prompt Template 구조,  *간단한 샘플 코드 작성(ex: AI helloworld구축, 초간단 RAG연동)
+
+    -- n8n의 이해 (박창훈B, 이수진D)
+       예시) Workflow 개념, Node 기반 자동화 구조, AI Node 활용, *간단한 샘플 코드 작성(ex: 로그수집>AI요약>Slack전송)
+
+2. Vibe Coding 내부 교육 / 학습 내용 세미나 발표  (박기남 차장)
+    -- CLI환경 클로드 코드 세팅 및 사용 방법 내부 전파 교육
+    -- 실제 사용 중 발생 이슈 및 한계 사항 전파 교육 
+
+3. 실제 프로젝트 적용을 위한 Vibe Coding 개발 방향 설정 및 환경 구성 
+
+ 
+
+<추진 일정>
+
+1. 3월 16일 까지 팀원들의 refresh휴가 일정이 각각 계획되어 있어서 
+     17일까지 학습자료 취합 후 내부 발표 및 정리 (이너팀 내부 세미나, 17일 예정)
+
+2. CLI 환경 클로드코드 관련 내부 전파 교육 학습 (박기남C, 18일 예정)
+
+3. 다른 TSG 그룹과의 커뮤니케이션 후 실제 프로젝트 적용을 위한 이너팀 AI개발 방향 설정 및 환경 구성
+
+ 
